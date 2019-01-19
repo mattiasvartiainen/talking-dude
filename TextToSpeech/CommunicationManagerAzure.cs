@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Google.Cloud.TextToSpeech.V1;
 
 namespace TextToSpeech
 {
@@ -12,7 +13,7 @@ namespace TextToSpeech
     using Windows.Storage;
     using Windows.Storage.Streams;
 
-    public class CommunicationManager
+    public class CommunicationManagerAzure : ICommunicationManager
     {
         private readonly string _host;
         private string _accessToken = null;
@@ -28,7 +29,7 @@ namespace TextToSpeech
             set { _accessToken = value; }
         }
 
-        public CommunicationManager(string host)
+        public CommunicationManagerAzure(string host)
         {
             _host = host;
         }
@@ -81,6 +82,24 @@ namespace TextToSpeech
             return null;
         }
 
+        public Task<object> StreamingMicRecognizeAsync(int seconds)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsRecording { get; }
+        public Task StopRecording()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetLastTranscript()
+        {
+            throw new NotImplementedException();
+        }
+
+        public event EventHandler<TranscriptReceivedEventArgs> TranscriptReceived;
+
         public async Task<byte[]> TranslateTextToFile(string body)
         {
             using (var client = new HttpClient())
@@ -105,8 +124,8 @@ namespace TextToSpeech
 
                     var response = await client.SendAsync(request);
 
-                    Stream stream = await response.Content.ReadAsStreamAsync();
-                    IInputStream inputStream = stream.AsInputStream();
+                    var stream = await response.Content.ReadAsStreamAsync();
+                    var inputStream = stream.AsInputStream();
                     ulong totalBytesRead = 0;
                     while (true)
                     {

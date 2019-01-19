@@ -8,28 +8,23 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel>
-        <Button Click="Button_Click">Click Me!</Button>
-
-        <Image Margin="20" HorizontalAlignment="Left" Stretch="None" Name="MyImage">
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Image HorizontalAlignment="Left" Stretch="None" Name="MyImage" VerticalAlignment="Center" Height="436" Width="426" Margin="0,0,0,0">
             <Image.Source>
                 <BitmapImage x:Name="Cartman" UriSource="../Assets/cartman-1.gif" AutoPlay="False"></BitmapImage>
             </Image.Source>
         </Image>
 
-        <StackPanel x:Name="PlaybackButtons" Orientation="Horizontal" Visibility="Visible">
-            <Button
-                x:Name="PlayButton"
-                Click="{x:Bind Cartman.Play}"
-                Content="Play"
-                Margin="10,0,0,0"/>
-            <Button
-                x:Name="StopButton"
-                Click="{x:Bind Cartman.Stop}"
-                Content="Stop"
-                Margin="10,0,0,0"/>
-        </StackPanel>
         <TextBox Margin="10,0,10,0" LostFocus="WhenQuestion" Name="Question" FontSize="24"></TextBox>
+
+        <StackPanel x:Name="PlaybackButtons" Orientation="Horizontal" Visibility="Visible" Margin="140">
+            <Button Click="Button_Click_1">
+                <Image Source="Assets/microphone.png" Stretch="UniformToFill" Width="60" Height="60" Name="Microphone"/>
+            </Button>
+
+            <TextBox Margin="10,0,10,0" LostFocus="WhenQuestion" Name="RecordedQuestion" Width="600" IsReadOnly="True" FontSize="24"></TextBox>
+
+        </StackPanel>
         <MediaElement AutoPlay="True" Name="SoundPlayer" CurrentStateChanged="SoundPlayer_OnCurrentStateChanged" MediaEnded="SoundPlayer_OnMediaEnded" MediaOpened="SoundPlayer_OnMediaOpened"></MediaElement>
     </StackPanel>
 </Page>

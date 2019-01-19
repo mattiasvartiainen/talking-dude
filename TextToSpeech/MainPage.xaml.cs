@@ -21,8 +21,10 @@ namespace TextToSpeech
     using System.Net.Http;
     using System.Text;
     using System.Threading.Tasks;
+    using Windows.ApplicationModel.Core;
     using Windows.Storage;
     using Windows.Storage.Streams;
+    using Windows.UI.Core;
     using Windows.UI.Xaml.Media.Imaging;
 
     /// <summary>
@@ -30,26 +32,37 @@ namespace TextToSpeech
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private CommunicationManager communicationManager;
+        private readonly ICommunicationManager communicationManager;
 
         public MainPage()
         {
+            bool useGoogle = true;
+
             this.InitializeComponent();
 
             string host = "https://westeurope.tts.speech.microsoft.com/cognitiveservices/v1";
-            communicationManager = new CommunicationManager(host);
+
+            communicationManager = useGoogle ? new CommunicationManagerGoogle() : (ICommunicationManager)new CommunicationManagerAzure(host);
+            communicationManager.TranscriptReceived += CommunicationManager_TranscriptReceived;
+
+            Windows.UI.Core.Preview.SystemNavigationManagerPreview.GetForCurrentView().CloseRequested +=
+                async (sender, args) =>
+                {
+                    args.Handled = true;
+                    communicationManager.StopRecording();
+                        App.Current.Exit();
+                };
         }
 
-        private async void Button_Click(object sender, RoutedEventArgs e)
+        private void CommunicationManager_TranscriptReceived(object sender, TranscriptReceivedEventArgs e)
         {
-            var text = "Hej jag heter Fisken och äter blåbär";
-
-            var wav = await communicationManager.TranslateTextToWav(text);
-            var soundSource = ConvertTo(wav);
-            soundSource.Seek(0);
-
-            SoundPlayer.SetSource(soundSource, "audio/wav");
-            //SoundPlayer.Play();
+            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                RecordedQuestion.Text = e.Transcript;
+                AnswerQuestion(e.Transcript);
+            });
+            //var text = communicationManager.GetLastTranscript();
+            //Say(text);
         }
 
         private async void Say(string text)
@@ -83,13 +96,27 @@ namespace TextToSpeech
 
         private void WhenQuestion(object sender, RoutedEventArgs e)
         {
+            if (string.IsNullOrEmpty(Question.Text))
+                return;
+
+            AnswerQuestion(Question.Text.Trim('?'));
+        }
+
+        private void AnswerQuestion(string question)
+        {
             var svar = "Jag förstår inte frågan";
 
-            if (Question.Text == "Vad heter du?")
-                svar = "Jag heter Albin";
+            if (question == "Vad heter du")
+                svar = "Jag heter Jöns Petter Svanström";
 
-            if (Question.Text == "Hur gammal är du?")
+            if (question == "Hur gammal är du")
                 svar = "Jag är 12 år";
+
+            if (question == "Vad gillar du för mat")
+                svar = "Jag tycker mycket om spagetti och köttfärsås";
+
+            if (question == "Vad gillar du för tv program")
+                svar = "Jag gillar kung julien";
 
             Say(svar);
 
@@ -99,6 +126,20 @@ namespace TextToSpeech
         private void RemoveQuestion()
         {
             Question.Text = string.Empty;
+        }
+
+        private async void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (communicationManager.IsRecording)
+            {
+                await communicationManager.StopRecording();
+                Microphone.Source = new BitmapImage(new Uri("ms-appx:///Assets/microphone.png"));
+            }
+            else
+            {
+                Microphone.Source = new BitmapImage(new Uri("ms-appx:///Assets/microphone_red.png"));
+                await communicationManager.StreamingMicRecognizeAsync(10);
+            }
         }
     }
 }
