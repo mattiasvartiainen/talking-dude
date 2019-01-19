@@ -13,8 +13,6 @@
 
         Task StopRecording();
 
-        string GetLastTranscript();
-
         event EventHandler<TranscriptReceivedEventArgs> TranscriptReceived;
     }
 }

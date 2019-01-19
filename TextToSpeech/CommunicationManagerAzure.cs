@@ -93,11 +93,6 @@ namespace TextToSpeech
             throw new NotImplementedException();
         }
 
-        public string GetLastTranscript()
-        {
-            throw new NotImplementedException();
-        }
-
         public event EventHandler<TranscriptReceivedEventArgs> TranscriptReceived;
 
         public async Task<byte[]> TranslateTextToFile(string body)

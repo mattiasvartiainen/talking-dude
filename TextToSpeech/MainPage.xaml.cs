@@ -1,34 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+﻿
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace TextToSpeech
 {
-    using System.Diagnostics;
-    using System.Net.Http;
-    using System.Text;
-    using System.Threading.Tasks;
+    using System;
+    using System.IO;
+    using System.Runtime.InteropServices.WindowsRuntime;
     using Windows.ApplicationModel.Core;
-    using Windows.Storage;
     using Windows.Storage.Streams;
     using Windows.UI.Core;
+    using Windows.UI.Core.Preview;
+    using Windows.UI.Xaml;
+    using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Media.Imaging;
 
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    ///     An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class MainPage : Page
     {
@@ -36,21 +24,22 @@ namespace TextToSpeech
 
         public MainPage()
         {
-            bool useGoogle = true;
+            var useGoogle = true;
 
-            this.InitializeComponent();
+            InitializeComponent();
 
-            string host = "https://westeurope.tts.speech.microsoft.com/cognitiveservices/v1";
+            var host = "https://westeurope.tts.speech.microsoft.com/cognitiveservices/v1";
 
-            communicationManager = useGoogle ? new CommunicationManagerGoogle() : (ICommunicationManager)new CommunicationManagerAzure(host);
+            communicationManager = useGoogle
+                ? new CommunicationManagerGoogle()
+                : (ICommunicationManager) new CommunicationManagerAzure(host);
             communicationManager.TranscriptReceived += CommunicationManager_TranscriptReceived;
 
-            Windows.UI.Core.Preview.SystemNavigationManagerPreview.GetForCurrentView().CloseRequested +=
+            SystemNavigationManagerPreview.GetForCurrentView().CloseRequested +=
                 async (sender, args) =>
                 {
                     args.Handled = true;
-                    communicationManager.StopRecording();
-                        App.Current.Exit();
+                    Application.Current.Exit();
                 };
         }
 
@@ -83,6 +72,8 @@ namespace TextToSpeech
         private void SoundPlayer_OnMediaEnded(object sender, RoutedEventArgs e)
         {
             Cartman.Stop();
+            RecordedQuestion.Text = string.Empty;
+            Question.Text = string.Empty;
         }
 
         private void SoundPlayer_OnMediaOpened(object sender, RoutedEventArgs e)
@@ -119,13 +110,6 @@ namespace TextToSpeech
                 svar = "Jag gillar kung julien";
 
             Say(svar);
-
-            RemoveQuestion();
-        }
-
-        private void RemoveQuestion()
-        {
-            Question.Text = string.Empty;
         }
 
         private async void Button_Click_1(object sender, RoutedEventArgs e)

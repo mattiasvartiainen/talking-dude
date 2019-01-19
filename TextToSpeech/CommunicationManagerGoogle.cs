@@ -47,7 +47,6 @@ namespace TextToSpeech
 
         public CommunicationManagerGoogle()
         {
-            Task.Run(SetupSpeechClient);
         }
 
         public bool IsRecording => _isRecording;
@@ -109,20 +108,15 @@ namespace TextToSpeech
 
             await _streamingCall.WriteCompleteAsync();
 
-            _isRecording = false;
-        }
+            _mediaCapture = null;
 
-        public string GetLastTranscript()
-        {
-            return _lastTranscript;
+            _isRecording = false;
         }
 
         private async Task SetupSpeechClient()
         {
             _speech = SpeechClient.Create();
             _streamingCall = _speech.StreamingRecognize();
-
-            _mediaCapture = await GetMediaCapture();
 
             await _streamingCall.WriteAsync(
                 new StreamingRecognizeRequest()
@@ -142,15 +136,19 @@ namespace TextToSpeech
 
         public async Task<object> StreamingMicRecognizeAsync(int seconds)
         {
+            _mediaCapture = await GetMediaCapture();
+
             if (_mediaCapture == null)
             {
                 Debug.WriteLine("No microphone!");
                 return null;
             }
 
+            await SetupSpeechClient();
+
             _isRecording = true;
 
-            Task printResponses = PrintResponses();
+            var printResponses = PrintResponses();
 
             var profile = MediaEncodingProfile.CreateWav(AudioEncodingQuality.Auto);
             profile.Audio.SampleRate = (uint)16000; // Samples per second
@@ -161,23 +159,6 @@ namespace TextToSpeech
             await _mediaCapture.StartRecordToStreamAsync(profile, stream);
             stream.AmplitudeReading += AmplitudeReading; // get an amplitude event
 
-            await Task.Delay(TimeSpan.FromSeconds(seconds));
-            if (_isRecording)
-            {
-                try
-                {
-                    await _mediaCapture.StopRecordAsync();
-                    await _streamingCall.WriteCompleteAsync();
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine(e);
-                }
-            }
-
-            await printResponses;
-
-            _isRecording = false;
             return null;
         }
 
