@@ -9,10 +9,12 @@ namespace TextToSpeech
     using System.Runtime.InteropServices.WindowsRuntime;
     using Windows.ApplicationModel.Core;
     using Windows.Storage.Streams;
+    using Windows.System;
     using Windows.UI.Core;
     using Windows.UI.Core.Preview;
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
+    using Windows.UI.Xaml.Input;
     using Windows.UI.Xaml.Media.Imaging;
 
     /// <summary>
@@ -124,6 +126,18 @@ namespace TextToSpeech
                 Microphone.Source = new BitmapImage(new Uri("ms-appx:///Assets/microphone_red.png"));
                 await communicationManager.StreamingMicRecognizeAsync(10);
             }
+        }
+
+        private void Question_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(Question.Text))
+                return;
+
+            if (e.Key == VirtualKey.Enter)
+            {
+                AnswerQuestion(Question.Text.Trim('?'));
+            }
+
         }
     }
 }

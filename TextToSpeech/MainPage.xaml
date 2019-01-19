@@ -15,7 +15,7 @@
             </Image.Source>
         </Image>
 
-        <TextBox Margin="10,0,10,0" LostFocus="WhenQuestion" Name="Question" FontSize="24"></TextBox>
+        <TextBox Margin="10,0,10,0" LostFocus="WhenQuestion" Name="Question" FontSize="24" KeyDown="Question_OnKeyDown"></TextBox>
 
         <StackPanel x:Name="PlaybackButtons" Orientation="Horizontal" Visibility="Visible" Margin="140">
             <Button Click="Button_Click_1">
